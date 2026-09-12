@@ -1,4 +1,4 @@
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,13 +41,10 @@ public class NetworkUiManager : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ip, port, "0.0.0.0");
         NetworkManager.Singleton.StartHost();
 
-
-
         Debug.Log($"Hosting on Server IP: {ip}, Port: {port}");
     }
 
-    private void ClientButtonOnClick()
-    {
+    private void ClientButtonOnClick() { 
         string ip = string.IsNullOrWhiteSpace(targetIPInputField.text) ? defaultIP : targetIPInputField.text.Trim();
         ushort port = GetPortFromInput(targetPortInputField);
 
