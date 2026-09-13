@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "InputSystem_Actions",
     "maps": [
         {
@@ -986,6 +987,34 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Test",
+            "id": "d5e171f1-14a3-4fe5-b9e2-e79756baae02",
+            "actions": [
+                {
+                    "name": "Hurt",
+                    "type": "Button",
+                    "id": "0f3c08ea-c044-4695-8c51-f83ab797f1c4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "756352a4-0b74-4b7f-9163-8ccd3c734684",
+                    "path": "<Keyboard>/h",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Hurt",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -4,6 +4,8 @@ using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using Unity.Netcode.Components;
+using System.Collections;
+using System;
 
 public class PlayerNetworkData : NetworkBehaviour
 {
@@ -21,6 +23,21 @@ public class PlayerNetworkData : NetworkBehaviour
     public NetworkVariable<bool> isReady = new NetworkVariable<bool>
     (false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    // Player CheckPoint Index
+    public NetworkVariable<int> currentCheckpointIndex = new NetworkVariable<int>
+        (0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    // Player Lives
+    public NetworkVariable<int> lives = new NetworkVariable<int>
+        (3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private bool isInvulnerable = false; 
+    [SerializeField] private float InvincibileTime = 1.5f; 
+
+    // Player Death
+    public NetworkVariable<int> deathCount = new NetworkVariable<int>
+    (0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
 
     [ServerRpc]
     // ServerRpc mean this function can be called by the client, the actual code executes on the server.   
@@ -32,7 +49,6 @@ public class PlayerNetworkData : NetworkBehaviour
         if (RaceManager.Instance != null)
             RaceManager.Instance.RecalculateReadyCount();
     }
-
 
     public override void OnNetworkSpawn()
     {
@@ -89,5 +105,55 @@ public class PlayerNetworkData : NetworkBehaviour
         if (spawnPoint == null) return;
 
         transform.position = spawnPoint.position;
+    }
+
+    // ----- CheckPoint -----
+    [ServerRpc]
+    public void ReportCheckpointServerRpc(int index) {
+        if (index > currentCheckpointIndex.Value)
+            currentCheckpointIndex.Value = index;
+        Debug.Log(currentCheckpointIndex.Value);
+    }
+
+    // ----- Take Damage -----
+    [ServerRpc]
+    public void TakeDamageServerRpc() {
+        if (isInvulnerable) return;
+        if (lives.Value <= 0) return;
+
+        lives.Value -= 1;
+
+        if (lives.Value <= 0) {
+            lives.Value = 3;
+            deathCount.Value += 1;   
+
+            var rpcParams = new ClientRpcParams {
+                Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { OwnerClientId } }
+            };
+            RespawnClientRpc(currentCheckpointIndex.Value, rpcParams);
+
+            StartCoroutine(InvulnerabilityRoutine());
+        }
+    }
+
+    private IEnumerator InvulnerabilityRoutine() {
+        isInvulnerable = true;
+        yield return new WaitForSeconds(InvincibileTime); 
+        isInvulnerable = false;
+    }
+
+    [ClientRpc]
+    private void RespawnClientRpc(int checkpointIndex, ClientRpcParams rpcParams = default) {
+        Transform cp = CheckpointManager.Instance.GetCheckpointTransform(checkpointIndex);
+        if (cp == null) return;
+
+        transform.position = cp.position;
+        transform.rotation = cp.rotation;
+
+        var rb = GetComponent<Rigidbody2D>();
+        if (rb != null) {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
     }
 }

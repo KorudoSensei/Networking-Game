@@ -11,9 +11,14 @@ public class WaitingRoomUI : MonoBehaviour {
     [SerializeField] private Button readyButton;
     [SerializeField] private TextMeshProUGUI readyButtonText;
 
-    [Header("倒数 Panel")]
+    [Header("Countdown Panel")]
     [SerializeField] private GameObject countdownPanel;
     [SerializeField] private TextMeshProUGUI countdownText;
+
+    [Header("Gameplay Panel")]
+    [SerializeField] private GameObject HealthPanel;
+    [SerializeField] private GameObject livesText;
+
 
     private PlayerNetworkData localPlayerData;
 
@@ -69,6 +74,13 @@ public class WaitingRoomUI : MonoBehaviour {
         if (newState == RaceState.Countdown) {
             waitingPanel.SetActive(false);
             countdownPanel.SetActive(true);
+            livesText.SetActive(false);
+        }
+
+        if (newState == RaceState.Racing) {
+            countdownPanel?.SetActive(false);
+            HealthPanel.SetActive(true);
+            livesText.SetActive(true);
         }
     }
 
