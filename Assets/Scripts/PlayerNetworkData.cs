@@ -46,6 +46,16 @@ public class PlayerNetworkData : NetworkBehaviour
     public NetworkVariable<int> finalRank = new NetworkVariable<int>
         (-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    //Live position and time gap
+    public NetworkVariable<int> currentRank = new NetworkVariable<int>
+        (1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    public NetworkVariable<float> gapToLeaderOrAhead = new NetworkVariable<float>
+        (0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    //checkpoint time
+    public float[] CheckpointTimes { get; private set; }
+
 
     [ServerRpc]
     // ServerRpc mean this function can be called by the client, the actual code executes on the server.   
@@ -70,6 +80,11 @@ public class PlayerNetworkData : NetworkBehaviour
             Debug.Log($"[Server] OwnerClientId={OwnerClientId} assign index: {assignedSpawnIndex.Value}");
         }
         */
+
+        if (IsServer && CheckpointManager.Instance != null)
+        {
+            CheckpointTimes = new float[CheckpointManager.Instance.LastCheckpointIndex + 2];
+        }
 
         // Move to Spawn Point
         if (IsOwner)
@@ -122,6 +137,12 @@ public class PlayerNetworkData : NetworkBehaviour
     public void ReportCheckpointServerRpc(int index) {
         if (index > currentCheckpointIndex.Value)
             currentCheckpointIndex.Value = index;
+
+            if (CheckpointTimes != null && index < CheckpointTimes.Length)
+            {
+                CheckpointTimes[index] = Time.time;
+            }
+
         Debug.Log(currentCheckpointIndex.Value);
     }
 

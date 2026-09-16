@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using System.Collections.Generic;
 
 public enum RaceState {
     Waiting,
@@ -40,6 +41,13 @@ public class RaceManager : NetworkBehaviour {
 
     [Header("Car Prefabs")]
     [SerializeField] private GameObject[] carPrefabs; 
+
+    private List<PlayerNetworkData> activePlayers = new List<PlayerNetworkData>();
+
+    [Header("Audio SFX")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip countdownSFX;
+    [SerializeField] private AudioClip finishLineSFX;
 
     public void ConfigureConnectionApproval() {
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
@@ -122,6 +130,14 @@ public class RaceManager : NetworkBehaviour {
     // ----- Timer -----
     private void Update() {
         if (!IsServer) return;
+
+        //calculate for live ui
+        if (CurrentState.Value == RaceState.Racing) 
+        {
+        CalculatePositionsAndGaps();
+        return;
+        }
+
         if (CurrentState.Value != RaceState.Waiting) return;
 
         TimeRemaining.Value -= Time.deltaTime;
@@ -147,6 +163,9 @@ public class RaceManager : NetworkBehaviour {
     }
 
     private IEnumerator RunCountdown() {
+
+        PlayCountdownSoundClientRpc();
+
         // CountdownNumber for WaitingRoomUi text Update
         CountdownNumber.Value = 3;
         yield return new WaitForSeconds(1f);
@@ -160,6 +179,21 @@ public class RaceManager : NetworkBehaviour {
         raceStartServerTime.Value = NetworkManager.Singleton.ServerTime.Time; 
         CurrentState.Value = RaceState.Racing;
     }
+    
+    [ClientRpc]
+    private void PlayCountdownSoundClientRpc() 
+    {
+        audioSource.PlayOneShot(countdownSFX);
+    }
+
+    [ClientRpc]
+    private void PlayFinishSoundClientRpc(ulong finisherClientId) 
+    {
+        if (NetworkManager.Singleton.LocalClientId == finisherClientId) 
+        {
+            audioSource.PlayOneShot(finishLineSFX);
+        }
+    }   
 
     private void SpawnPlayerCar(ulong clientId) {
         int index = GetNextSpawnIndex();
@@ -178,6 +212,64 @@ public class RaceManager : NetworkBehaviour {
 
     public int RegisterFinish(PlayerNetworkData player) {
         finishedCount++;
+        PlayFinishSoundClientRpc(player.OwnerClientId);
+
         return finishedCount; // 谁先调用这个方法，谁就拿到较小的名次数字
+    }
+
+    private void CalculatePositionsAndGaps() 
+    {
+        activePlayers.Clear();
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList) {
+            if (client.PlayerObject != null) {
+                var data = client.PlayerObject.GetComponent<PlayerNetworkData>();
+                if (data != null) activePlayers.Add(data);
+            }
+        }
+
+        //Sort based on checkpoint index and time
+        activePlayers.Sort((a, b) => {
+            if (a.hasFinished.Value && b.hasFinished.Value)
+                return a.finalRank.Value.CompareTo(b.finalRank.Value);
+            if (a.hasFinished.Value) return -1;
+            if (b.hasFinished.Value) return 1;
+
+            //Higher checkpoint index comes first
+            if (a.currentCheckpointIndex.Value != b.currentCheckpointIndex.Value) {
+                return b.currentCheckpointIndex.Value.CompareTo(a.currentCheckpointIndex.Value);
+            }
+
+            //Same checkpoint then earlier timestamp comes first
+            int cp = a.currentCheckpointIndex.Value;
+            if (cp > 0 && a.CheckpointTimes != null && b.CheckpointTimes != null) {
+                return a.CheckpointTimes[cp].CompareTo(b.CheckpointTimes[cp]);
+            }
+
+            return 0;
+        });
+
+        //rankings and gaps
+        for (int i = 0; i < activePlayers.Count; i++) {
+            activePlayers[i].currentRank.Value = i + 1;
+
+            if (i == 0) {
+                activePlayers[i].gapToLeaderOrAhead.Value = 0f;
+            } else {
+                PlayerNetworkData leader = activePlayers[0];
+                PlayerNetworkData current = activePlayers[i];
+
+                int cp = current.currentCheckpointIndex.Value;
+
+                if (cp > 0 && leader.CheckpointTimes != null && current.CheckpointTimes != null && 
+                    leader.CheckpointTimes[cp] > 0 && current.CheckpointTimes[cp] > 0) 
+                {
+                    float gap = current.CheckpointTimes[cp] - leader.CheckpointTimes[cp];
+                    current.gapToLeaderOrAhead.Value = Mathf.Max(0f, gap);
+                } else {
+                    current.gapToLeaderOrAhead.Value = 0f;
+                }
+            }
+        }
     }
 }

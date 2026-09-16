@@ -20,6 +20,7 @@ public class WaitingRoomUI : MonoBehaviour {
     [SerializeField] private GameObject livesText;
     [SerializeField] private GameObject TimeText;
     [SerializeField] private GameObject RankText;
+    [SerializeField] private GameObject liveUIPanel;
 
 
     private PlayerNetworkData localPlayerData;
@@ -79,6 +80,7 @@ public class WaitingRoomUI : MonoBehaviour {
             //livesText.SetActive(false);
             TimeText.SetActive(false);
             RankText.SetActive(false);
+            liveUIPanel.SetActive(false);
         }
 
         if (newState == RaceState.Racing) {
@@ -87,6 +89,7 @@ public class WaitingRoomUI : MonoBehaviour {
             //livesText.SetActive(true);
             TimeText.SetActive(true);
             RankText.SetActive(true);
+            liveUIPanel.SetActive(true);
         }
     }
 
