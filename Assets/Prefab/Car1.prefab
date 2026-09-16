@@ -194,7 +194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3168904811
+  GlobalObjectIdHash: 349813303
   InScenePlacedSourceGlobalObjectIdHash: 3828315767
   m_InScenePlacedDisabledByDefault: 1
   DeferredDespawnTick: 0
@@ -411,11 +411,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarController
   ShowTopMostFoldoutHeaderGroup: 1
-  driftFactor: 0.93
-  accelerationFactor: 30
-  turnFactor: 3.5
-  friction: 3
-  maxSpeed: 20
+  driftFactor: 0.5
+  accelerationFactor: 15
+  turnFactor: 1.5
+  friction: 1.5
+  maxSpeed: 10
 --- !u!50 &6420664100040461738
 Rigidbody2D:
   serializedVersion: 5
@@ -477,7 +477,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.0094281435, y: 0.00000047683716}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -487,7 +487,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 3.734183, y: 9.9029455}
   m_EdgeRadius: 0
 --- !u!82 &8175925814951367724
 AudioSource:

@@ -55,11 +55,13 @@ public class PlayerNetworkData : NetworkBehaviour
         username.OnValueChanged += OnNameChanged;
         UpdateNameDisplay(username.Value.ToString());
 
+        /*
         // Get Position Index (0/1/2/3)
         if (IsServer) {
             assignedSpawnIndex.Value = RaceManager.Instance.GetNextSpawnIndex();
             Debug.Log($"[Server] OwnerClientId={OwnerClientId} assign index: {assignedSpawnIndex.Value}");
         }
+        */
 
         // Move to Spawn Point
         if (IsOwner)

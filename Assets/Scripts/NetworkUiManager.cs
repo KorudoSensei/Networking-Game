@@ -39,6 +39,8 @@ public class NetworkUiManager : MonoBehaviour
 
         EnteredUsername = SaveUsername(hostUsernameInputField);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ip, port, "0.0.0.0");
+        RaceManager.Instance.ConfigureConnectionApproval();
+
         NetworkManager.Singleton.StartHost();
 
         Debug.Log($"Hosting on Server IP: {ip}, Port: {port}");
