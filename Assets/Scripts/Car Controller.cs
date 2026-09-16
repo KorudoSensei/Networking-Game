@@ -6,7 +6,7 @@ public class CarController : NetworkBehaviour
     [Header("Car Settings")]
     public float driftFactor;
     public float accelerationFactor = 30.0f;
-    public float turnFactor = 3.5f;
+    public float turnFactor = 5.0f;
     public float friction = 3.0f;
     public float maxSpeed = 20;
 
@@ -63,10 +63,11 @@ public class CarController : NetworkBehaviour
 
     void ApplySteering()
     {
-        float minSpeedToTurn = carRigidbody2D.linearVelocity.magnitude / 8;
+        float minSpeedToTurn = carRigidbody2D.linearVelocity.magnitude / 12;
         minSpeedToTurn = Mathf.Clamp01(minSpeedToTurn);
+        float directionMultiplier = forwardVelocity >= 0 ? 1.0f : -1.0f;
 
-        rotationAngle -= steeringInput * turnFactor * minSpeedToTurn;
+        rotationAngle -= steeringInput * turnFactor * minSpeedToTurn * directionMultiplier;
 
         carRigidbody2D.MoveRotation(rotationAngle);
     }
