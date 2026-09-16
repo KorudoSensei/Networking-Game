@@ -2,6 +2,7 @@
 
 public class Checkpoint : MonoBehaviour {
     public int checkpointIndex;
+    public bool isFinishLine = false; // 起点/终点专用勾选
 
     private void OnTriggerEnter2D(Collider2D other) {
         var playerData = other.GetComponentInParent<PlayerNetworkData>();
@@ -9,6 +10,10 @@ public class Checkpoint : MonoBehaviour {
 
         if (!playerData.IsOwner) return;
 
-        playerData.ReportCheckpointServerRpc(checkpointIndex);
+        if (isFinishLine) {
+            playerData.ReportFinishLineServerRpc();
+        } else {
+            playerData.ReportCheckpointServerRpc(checkpointIndex);
+        }
     }
 }

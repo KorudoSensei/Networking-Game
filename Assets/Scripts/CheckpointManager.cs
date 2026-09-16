@@ -5,6 +5,8 @@ public class CheckpointManager : MonoBehaviour {
 
     [SerializeField] private Transform[] checkpoints;
 
+    public int LastCheckpointIndex => checkpoints.Length - 1;
+
     private void Awake() {
         Instance = this;
         AssignIndexesInOrder();

@@ -35,6 +35,10 @@ public class CarController : NetworkBehaviour
         {
             return;
         }
+
+        if (RaceManager.Instance == null || RaceManager.Instance.CurrentState.Value != RaceState.Racing)
+            return;
+
         ApplyEngineForce();
         ApplySteering();
         KillOrthogonalVeloicity();

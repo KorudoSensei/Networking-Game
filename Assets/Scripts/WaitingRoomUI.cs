@@ -18,6 +18,8 @@ public class WaitingRoomUI : MonoBehaviour {
     [Header("Gameplay Panel")]
     [SerializeField] private GameObject HealthPanel;
     [SerializeField] private GameObject livesText;
+    [SerializeField] private GameObject TimeText;
+    [SerializeField] private GameObject RankText;
 
 
     private PlayerNetworkData localPlayerData;
@@ -74,13 +76,17 @@ public class WaitingRoomUI : MonoBehaviour {
         if (newState == RaceState.Countdown) {
             waitingPanel.SetActive(false);
             countdownPanel.SetActive(true);
-            livesText.SetActive(false);
+            //livesText.SetActive(false);
+            TimeText.SetActive(false);
+            RankText.SetActive(false);
         }
 
         if (newState == RaceState.Racing) {
             countdownPanel?.SetActive(false);
             HealthPanel.SetActive(true);
-            livesText.SetActive(true);
+            //livesText.SetActive(true);
+            TimeText.SetActive(true);
+            RankText.SetActive(true);
         }
     }
 

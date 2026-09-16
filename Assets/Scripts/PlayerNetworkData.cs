@@ -38,6 +38,14 @@ public class PlayerNetworkData : NetworkBehaviour
     public NetworkVariable<int> deathCount = new NetworkVariable<int>
     (0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    // 
+    public NetworkVariable<bool> hasFinished = new NetworkVariable<bool>
+        (false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    // 
+    public NetworkVariable<int> finalRank = new NetworkVariable<int>
+        (-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
 
     [ServerRpc]
     // ServerRpc mean this function can be called by the client, the actual code executes on the server.   
@@ -157,5 +165,16 @@ public class PlayerNetworkData : NetworkBehaviour
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
+    }
+
+    [ServerRpc]
+    public void ReportFinishLineServerRpc() {
+        if (hasFinished.Value) return; 
+
+        if (currentCheckpointIndex.Value < CheckpointManager.Instance.LastCheckpointIndex)
+            return;
+
+        hasFinished.Value = true;
+        finalRank.Value = RaceManager.Instance.RegisterFinish(this);
     }
 }

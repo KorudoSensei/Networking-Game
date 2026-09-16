@@ -33,8 +33,13 @@ public class RaceManager : NetworkBehaviour {
     // Spawn Point Position Index
     private int nextSpawnIndex = 0;
 
+    // Race Time
+    public NetworkVariable<double> raceStartServerTime = new NetworkVariable<double>(0);
+
+    private int finishedCount = 0;
+
     [Header("Car Prefabs")]
-    [SerializeField] private GameObject[] carPrefabs; // 长度应该是 4，顺序对应第 1~4 个玩家
+    [SerializeField] private GameObject[] carPrefabs; 
 
     public void ConfigureConnectionApproval() {
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
@@ -152,6 +157,7 @@ public class RaceManager : NetworkBehaviour {
         CountdownNumber.Value = 0; 
         yield return new WaitForSeconds(1f);
 
+        raceStartServerTime.Value = NetworkManager.Singleton.ServerTime.Time; 
         CurrentState.Value = RaceState.Racing;
     }
 
@@ -161,7 +167,6 @@ public class RaceManager : NetworkBehaviour {
 
         GameObject carInstance = Instantiate(prefabToSpawn);
 
-        // 在 Spawn() 之前先设定好 assignedSpawnIndex，这样生成同步给所有人时数值就已经是对的
         var playerData = carInstance.GetComponent<PlayerNetworkData>();
         if (playerData != null) {
             playerData.assignedSpawnIndex.Value = index;
@@ -169,5 +174,10 @@ public class RaceManager : NetworkBehaviour {
 
         var netObj = carInstance.GetComponent<NetworkObject>();
         netObj.SpawnAsPlayerObject(clientId);
+    }
+
+    public int RegisterFinish(PlayerNetworkData player) {
+        finishedCount++;
+        return finishedCount; // 谁先调用这个方法，谁就拿到较小的名次数字
     }
 }
