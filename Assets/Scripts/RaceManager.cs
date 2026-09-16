@@ -33,20 +33,6 @@ public class RaceManager : NetworkBehaviour {
     // Spawn Point Position Index
     private int nextSpawnIndex = 0;
 
-    [Header("Car Prefabs")]
-    [SerializeField] private GameObject[] carPrefabs; // 长度应该是 4，顺序对应第 1~4 个玩家
-
-    public void ConfigureConnectionApproval() {
-        NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
-    }
-
-    private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,
-                                NetworkManager.ConnectionApprovalResponse response) {
-        response.Approved = true;
-        response.CreatePlayerObject = false; // 不用默认方式生成，我们自己手动生成正确的 car prefab
-        response.Pending = false;
-    }
-
     private void Awake() {
         Instance = this;
     }
@@ -82,14 +68,12 @@ public class RaceManager : NetworkBehaviour {
     // ----- Participant Count/Ready Status -----
     private void OnClientConnected(ulong clientId) {
         if (!IsServer) return;
-
         ConnectedPlayerCount.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
 
+        // Waiting timer reset when new player joins, unless is full
         if (CurrentState.Value == RaceState.Waiting && ConnectedPlayerCount.Value < maxPlayers) {
             TimeRemaining.Value = normalWaitTime;
         }
-
-        SpawnPlayerCar(clientId);
     }
 
     // I haven't test this function ^=^
@@ -153,21 +137,5 @@ public class RaceManager : NetworkBehaviour {
         yield return new WaitForSeconds(1f);
 
         CurrentState.Value = RaceState.Racing;
-    }
-
-    private void SpawnPlayerCar(ulong clientId) {
-        int index = GetNextSpawnIndex();
-        GameObject prefabToSpawn = carPrefabs[Mathf.Min(index, carPrefabs.Length - 1)];
-
-        GameObject carInstance = Instantiate(prefabToSpawn);
-
-        // 在 Spawn() 之前先设定好 assignedSpawnIndex，这样生成同步给所有人时数值就已经是对的
-        var playerData = carInstance.GetComponent<PlayerNetworkData>();
-        if (playerData != null) {
-            playerData.assignedSpawnIndex.Value = index;
-        }
-
-        var netObj = carInstance.GetComponent<NetworkObject>();
-        netObj.SpawnAsPlayerObject(clientId);
     }
 }
