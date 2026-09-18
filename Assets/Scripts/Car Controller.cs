@@ -69,8 +69,9 @@ public class CarController : NetworkBehaviour
     {
         float minSpeedToTurn = carRigidbody2D.linearVelocity.magnitude / 8;
         minSpeedToTurn = Mathf.Clamp01(minSpeedToTurn);
+        float directionMultiplier = forwardVelocity >= 0 ? 1.0f : -1.0f;
 
-        rotationAngle -= steeringInput * turnFactor * minSpeedToTurn;
+        rotationAngle -= steeringInput * turnFactor * minSpeedToTurn * directionMultiplier;
 
         carRigidbody2D.MoveRotation(rotationAngle);
     }
